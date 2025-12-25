@@ -13,5 +13,10 @@ namespace http {
 
             int startServer();
             void closeServer();
-    };
+            void handleRequest(ssize_t client_socket, struct sockaddr*client_address, socklen_t* client_addrlen);
+
+        public:
+            void GET();
+            void POST();
+        };
 } //namespace http
