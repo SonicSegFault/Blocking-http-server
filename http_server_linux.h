@@ -16,7 +16,7 @@ namespace http {
             void handleRequest(ssize_t client_socket, struct sockaddr*client_address, socklen_t* client_addrlen);
 
         public:
-            void GET();
-            void POST();
+            int GET(ssize_t client_socket);
+            int POST(ssize_t client_socket, std::string body);
         };
 } //namespace http
