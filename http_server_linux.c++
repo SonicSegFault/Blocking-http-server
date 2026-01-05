@@ -1,4 +1,5 @@
 #include "http_server_linux.h"
+#include "http_routing.h"
 #include <sys/socket.h>
 #include <iostream>
 #include <unistd.h>
@@ -91,14 +92,19 @@ void http::TcpServer::handleRequest(ssize_t client_socket, struct sockaddr* clie
     std::string method, path, version;
     iss >> method >> path >> version;
 
+    std::cout << method << "\t" << path << std::endl; 
     if (method == "GET") {
-        GET(client_socket);
+        if(get_response.count(path)) get_response[path](client_socket, body);
+        else send_404(client_socket);
     } else if (method == "POST") {
-        POST(client_socket, body);
+        if(post_response.count(path)) post_response[path](client_socket, body);
+        else send_404(client_socket);
     }
+    std::cout<< buffer << std::endl;
     close(client_socket);
 }
 
+//DEPRECATED
 int http::TcpServer::GET(ssize_t client_socket) {
     std::string body = "Hello, world!";
     std::string response = "HTTP/1.1 200 OK\r\n" "Content-Type: text/plain\r\n" "Content-Length: " 
@@ -113,6 +119,7 @@ int http::TcpServer::GET(ssize_t client_socket) {
     return 200;
 }
 
+//DEPRECATED    
 int http::TcpServer::POST(ssize_t client_socket, std::string body){
     std::string response = "HTTP/1.1 200 OK\r\n" "Content-Type: text/plain\r\n" "Content-Length: "
     + std::to_string(body.size()) + "\r\n" "\r\n" + body;
@@ -124,6 +131,22 @@ int http::TcpServer::POST(ssize_t client_socket, std::string body){
     }
     return 200;
 } 
+
+int http::TcpServer::send_404(ssize_t client_socket){
+    const char* res =
+        "HTTP/1.1 404 Not Found\r\n"
+        "Content-Type: text/plain\r\n"
+        "Content-Length: 13\r\n"
+        "Connection: close\r\n"
+        "\r\n"
+        "404 Not Found";
+    size_t sentSize = 0;
+    for(size_t i = 0; i < sizeof(res); i+=sentSize){
+        sentSize = send(client_socket, res+i, sizeof(res)-i, 0);
+        if(sentSize <= 0) return 500;
+    }
+    return 404;
+}
 
 void http::TcpServer::closeServer() { 
     if (server_socket >= 0) {
