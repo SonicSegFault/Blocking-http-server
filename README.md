@@ -14,6 +14,26 @@ This project demonstrates socket programming, manual HTTP parsing, and simple ro
 
 ---
 
+## Routes
+
+# GET `/`
+Returns a plain text response. Used as a basic root endpoint.
+
+# GET `/file`
+Downloads `something.txt` from the server.
+
+- Forces file download (`Content-Disposition: attachment`)
+- Streams file in 8 KB chunks
+- Sets correct `Content-Length`
+
+# POST `/login`
+Echoes the request body.
+
+- Responds with `201 Created`
+- Response body equals request body
+
+---
+
 ## Requirements
 
 - Linux environment
